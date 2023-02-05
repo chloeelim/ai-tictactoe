@@ -2,8 +2,10 @@ import * as React from 'react';
 import { Grid, styled } from '@mui/material';
 import NaiveMiniMax, { State } from './AI';
 import HistoryBoard from './HistoryBoard';
+import GameOutcome from './GameOutcome';
 
 export enum Player { X = 'X', O = 'O' }
+export enum Outcome { X = 'X', O = 'O', AI = 'AI', Tie = 'Tie'}
 export type Board = {
     board: (Player | undefined)[];
 }
@@ -40,10 +42,11 @@ const lines = [
 const GameBoard = (boardProps:{isAgainstAI: boolean}) => {
     
     const [currentPlayer, setCurrentPlayer] = React.useState<Player>(Player.X);
-    const [isOver, setIsOver] = React.useState<Boolean>(false);
+    const [isOver, setIsOver] = React.useState<boolean>(false);
     const [state, setState] = React.useState<Board>(initialiseState);
     const [winningCells, setWinningCells] = React.useState<number[]>([]);
     const [history, setHistory] = React.useState<State[]>([]);
+    const [gameOutcome, setGameOutcome] = React.useState<Outcome | undefined>(undefined);
 
     React.useEffect(checkOutcome, [state, currentPlayer])
     React.useEffect(resetBoard, [boardProps.isAgainstAI])
@@ -101,13 +104,21 @@ const GameBoard = (boardProps:{isAgainstAI: boolean}) => {
                 if (line.every(ln => playerLocations.includes(ln))) {
                     setIsOver(true);
                     setWinningCells(line);
-                    console.log("player " + currentPlayer + " has won!");
+                    
+                    if (player === Player.X) {
+                        setGameOutcome(Outcome.X);
+                    } else if (boardProps.isAgainstAI) {
+                        setGameOutcome(Outcome.AI);
+                    } else {
+                        setGameOutcome(Outcome.O);
+                    }
                 }
             }
         }
         if (state.board.findIndex(x => x === undefined) === -1) {
+            setIsOver(true);
             setWinningCells([0, 1, 2, 3, 4, 5, 6, 7, 8]);
-            console.log("tie!");
+            setGameOutcome(Outcome.Tie);
         }
     }
 
@@ -136,7 +147,10 @@ const GameBoard = (boardProps:{isAgainstAI: boolean}) => {
                     })
                 }
             </Grid>
-            <HistoryBoard moves={history} />
+            <div style={{width: '466px'}}>
+                <GameOutcome visible={isOver} outcome={gameOutcome}/>
+                <HistoryBoard moves={history} />
+            </div>
         </div>
     );
 };

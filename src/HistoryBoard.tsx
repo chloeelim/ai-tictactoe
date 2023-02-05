@@ -5,7 +5,7 @@ import { State } from './AI';
 const HistoryBoard = (props:{moves:State[]}) => {
     console.log(props.moves);
     return (
-        <List style={{backgroundColor: '#393939', maxHeight: 466, overflow: 'auto', borderRadius: '10px 10px 20px 20px', paddingTop: '0px'}}>
+        <List style={{backgroundColor: '#393939', maxHeight: 380, overflow: 'auto', borderRadius: '10px 10px 20px 20px', paddingTop: '0px'}}>
             <ListSubheader style={{color: '#ccc', backgroundColor: '#2b2b2b', fontWeight: 'bold', fontSize: '18px'}}>Game History</ListSubheader>
             {
                 props.moves.map((state, i) => (
