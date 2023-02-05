@@ -9,17 +9,18 @@ const StyledSquare = styled('div')(({ theme }) => ({
     height:"150px",
     display: "flex",
     flexDirection: "column",
-    backgroundColor:"#ffc365",
+    backgroundColor:"#323435",
     fontSize: "150px",
     fontWeight: "bold",
     textAlign: "center",
-    color: "#fff",
+    color: "#E4E6E8",
     alignContent: "center",
     justifyContent: "center"
 }));
 
 const WinningSquare = styled(StyledSquare)(({ theme }) => ({
-    color: "red",
+    color: "#b0b0b0",
+    backgroundColor:"#191b1c",
 }));
 
 // indexes of winning lines
@@ -89,8 +90,10 @@ const Board = (boardProps:{isAgainstAI: boolean}) => {
                 }
             }
         }
-
-        if (state.findIndex(x => x === undefined)) console.log("tie!");
+        if (state.findIndex(x => x === undefined) === -1) {
+            setWinningCells([0, 1, 2, 3, 4, 5, 6, 7, 8]);
+            console.log("tie!");
+        }
     }
 
     function getAIMove(updatedState: (Player | undefined)[]) {
