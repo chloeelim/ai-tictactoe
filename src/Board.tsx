@@ -1,7 +1,8 @@
 import * as React from 'react';
 import { Grid, styled } from '@mui/material';
+import NaiveMiniMax from './AI';
 
-enum Player { X = 'X', O = 'O' }
+export enum Player { X = 'X', O = 'O' }
 
 const StyledSquare = styled('div')(({ theme }) => ({
     width:"150px",
@@ -31,7 +32,7 @@ const lines = [
     [0, 4, 8], [2, 4, 6]
 ];
 
-const Board = () => {
+const Board = (boardProps:{isAgainstAI: boolean}) => {
     
     const [currentPlayer, setCurrentPlayer] = React.useState<Player>(Player.X);
     const [isOver, setIsOver] = React.useState<Boolean>(false);
@@ -44,10 +45,12 @@ const Board = () => {
         function handleClick(index: number) {
             if (isOver) return;
             if (state[index] !== undefined) return;
-            const updatedState: (Player | undefined)[] = Object.assign([],state);
+            if (boardProps.isAgainstAI && currentPlayer === Player.O) return;
+            const updatedState: (Player | undefined)[] = Object.assign([], state);
             updatedState[index] = currentPlayer;
             setState(updatedState);
             setCurrentPlayer(currentPlayer === Player.X ? Player.O : Player.X);
+            if (boardProps.isAgainstAI) getAIMove(updatedState);
         }
         
         if (props.isWin) {
@@ -70,7 +73,7 @@ const Board = () => {
     }
 
     function checkOutcome() {
-        for (let player in Player) {
+        for (const player of Object.values(Player)) {
             const playerLocations = state.reduce((acc: number[], curr, i) => {
                 if (curr === player) {
                     acc.push(i);
@@ -83,10 +86,20 @@ const Board = () => {
                     setIsOver(true);
                     setWinningCells(line);
                     console.log("player " + currentPlayer + " has won!");
-                    break;
                 }
             }
         }
+
+        if (state.findIndex(x => x === undefined)) console.log("tie!");
+    }
+
+    function getAIMove(updatedState: (Player | undefined)[]) {
+        const minimax: NaiveMiniMax = new NaiveMiniMax();
+        console.log(state);
+        const bestState = minimax.getBestState(updatedState, Player.O);
+        console.log(bestState)
+        setState(bestState.board);
+        setCurrentPlayer(Player.X);
     }
 
     return (

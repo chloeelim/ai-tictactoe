@@ -7,7 +7,7 @@ import Board from './Board';
 const root = ReactDOM.createRoot(document.getElementById('root')!);
 root.render(
   <React.StrictMode>
-    <Board />
+    <Board isAgainstAI={true}/>
   </React.StrictMode>
 );
 
