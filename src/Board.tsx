@@ -74,7 +74,7 @@ const Board = (boardProps:{isAgainstAI: boolean}) => {
     }
 
     function checkOutcome() {
-        for (const player of Object.values(Player)) {
+        for (let player of Object.values(Player)) {
             const playerLocations = state.reduce((acc: number[], curr, i) => {
                 if (curr === player) {
                     acc.push(i);
@@ -82,7 +82,7 @@ const Board = (boardProps:{isAgainstAI: boolean}) => {
                 return acc;
             }, [])
     
-            for (var line of lines) {
+            for (let line of lines) {
                 if (line.every(ln => playerLocations.includes(ln))) {
                     setIsOver(true);
                     setWinningCells(line);

@@ -22,13 +22,13 @@ function getWinner(board: (Player | undefined)[]): (Player | undefined) {
     [0, 4, 8], [2, 4, 6]
   ];
 
-  for (const player of Object.values(Player)) {
+  for (let player of Object.values(Player)) {
     const playerLocations = board.reduce((acc: number[], curr, i) => {
       if (curr === player) acc.push(i);
       return acc;
     }, [])
 
-    for (var line of lines) {
+    for (let line of lines) {
         if (line.every(ln => playerLocations.includes(ln))) {
             return player;
         }
