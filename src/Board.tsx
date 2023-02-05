@@ -48,7 +48,7 @@ const GameBoard = (boardProps:{isAgainstAI: boolean}) => {
     const [history, setHistory] = React.useState<State[]>([]);
     const [gameOutcome, setGameOutcome] = React.useState<Outcome | undefined>(undefined);
 
-    React.useEffect(checkOutcome, [state, currentPlayer])
+    React.useEffect(checkOutcome, [state, currentPlayer, boardProps.isAgainstAI])
     React.useEffect(resetBoard, [boardProps.isAgainstAI])
     
     const Square = (props:{id: number, value: (Player | undefined), isWin: boolean}) => {
