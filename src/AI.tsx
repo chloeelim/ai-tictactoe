@@ -1,17 +1,17 @@
-import { Player } from "./Board";
+import { Board, Player } from "./Board";
 
 interface AI {
-  getBestState(board: (Player | undefined)[], currentPlayer: Player): State
+  getBestState(board: Board, currentPlayer: Player): State
 }
 
-type State = {
-  board: (Player | undefined)[];
+export type State = {
+  board: Board;
   playerPlayed: Player;
   squarePlayed: number;
   score: number;
 }
 
-function getWinner(board: (Player | undefined)[]): (Player | undefined) {
+function getWinner(board: Board): (Player | undefined) {
   // indexes of winning lines
   const lines = [
     // horizontal
@@ -23,7 +23,7 @@ function getWinner(board: (Player | undefined)[]): (Player | undefined) {
   ];
 
   for (let player of Object.values(Player)) {
-    const playerLocations = board.reduce((acc: number[], curr, i) => {
+    const playerLocations = board.board.reduce((acc: number[], curr, i) => {
       if (curr === player) acc.push(i);
       return acc;
     }, [])
@@ -39,7 +39,7 @@ function getWinner(board: (Player | undefined)[]): (Player | undefined) {
 }
 
 class NaiveMiniMax implements AI {
-  getBestState(board: (Player | undefined)[], currentPlayer: Player): State {
+  getBestState(board: Board, currentPlayer: Player): State {
     const winner = getWinner(board);
     const otherPlayer = currentPlayer === Player.X ? Player.O : Player.X;
     if (winner === Player.X) {
@@ -58,7 +58,7 @@ class NaiveMiniMax implements AI {
       };
     }
 
-    if (board.findIndex(x => x === undefined) === -1) { // tie
+    if (board.board.findIndex(x => x === undefined) === -1) { // tie
       return {
         board: board,
         playerPlayed: otherPlayer,
@@ -70,14 +70,14 @@ class NaiveMiniMax implements AI {
     var nextStates: State[] = [];
 
     for (let i: number = 0; i < 9; i++) {
-      if (board[i] === undefined) {
-        const nextBoard = [...board];
+      if (board.board[i] === undefined) {
+        const nextBoard = [...board.board];
         nextBoard[i] = currentPlayer;
         var nextState = {
-          board: nextBoard,
-          playerPlayed: otherPlayer,
+          board: {board: nextBoard},
+          playerPlayed: currentPlayer,
           squarePlayed: i,
-          score: this.getBestState(nextBoard, otherPlayer).score
+          score: this.getBestState({board: nextBoard}, otherPlayer).score
         }
         nextStates.push(nextState);
       }

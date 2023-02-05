@@ -1,8 +1,12 @@
 import * as React from 'react';
 import { Grid, styled } from '@mui/material';
-import NaiveMiniMax from './AI';
+import NaiveMiniMax, { State } from './AI';
+import HistoryBoard from './HistoryBoard';
 
 export enum Player { X = 'X', O = 'O' }
+export type Board = {
+    board: (Player | undefined)[];
+}
 
 const StyledSquare = styled('div')(({ theme }) => ({
     width:"150px",
@@ -33,25 +37,36 @@ const lines = [
     [0, 4, 8], [2, 4, 6]
 ];
 
-const Board = (boardProps:{isAgainstAI: boolean}) => {
+const GameBoard = (boardProps:{isAgainstAI: boolean}) => {
     
     const [currentPlayer, setCurrentPlayer] = React.useState<Player>(Player.X);
     const [isOver, setIsOver] = React.useState<Boolean>(false);
-    const [state, setState] = React.useState<(Player | undefined)[]>(initialiseState);
+    const [state, setState] = React.useState<Board>(initialiseState);
     const [winningCells, setWinningCells] = React.useState<number[]>([]);
+    const [history, setHistory] = React.useState<State[]>([]);
 
     React.useEffect(checkOutcome, [state, currentPlayer])
+    React.useEffect(resetBoard, [boardProps.isAgainstAI])
     
     const Square = (props:{id: number, value: (Player | undefined), isWin: boolean}) => {
         function handleClick(index: number) {
             if (isOver) return;
-            if (state[index] !== undefined) return;
+            if (state.board[index] !== undefined) return;
             if (boardProps.isAgainstAI && currentPlayer === Player.O) return;
-            const updatedState: (Player | undefined)[] = Object.assign([], state);
-            updatedState[index] = currentPlayer;
+            const updatedState: Board = Object.assign([], state);
+            updatedState.board[index] = currentPlayer;
+            
+            const move = {
+                board: updatedState,
+                playerPlayed: currentPlayer,
+                squarePlayed: index,
+                score: -1
+            };
+            const updatedHistory = [...history, move];
             setState(updatedState);
             setCurrentPlayer(currentPlayer === Player.X ? Player.O : Player.X);
-            if (boardProps.isAgainstAI) getAIMove(updatedState);
+            setHistory(updatedHistory);
+            if (boardProps.isAgainstAI) getAIMove(updatedState, updatedHistory);
         }
         
         if (props.isWin) {
@@ -65,17 +80,17 @@ const Board = (boardProps:{isAgainstAI: boolean}) => {
         );
     }
 
-    function initialiseState() : (Player | undefined)[] {
-        var initialisedState: (Player | undefined)[] = [];
+    function initialiseState() : Board {
+        var initialisedState: undefined[] = [];
         for (let i: number = 0; i < 9; i++) {
             initialisedState.push(undefined);
         }
-        return initialisedState;
+        return {board: initialisedState};
     }
 
     function checkOutcome() {
         for (let player of Object.values(Player)) {
-            const playerLocations = state.reduce((acc: number[], curr, i) => {
+            const playerLocations = state.board.reduce((acc: number[], curr, i) => {
                 if (curr === player) {
                     acc.push(i);
                 }
@@ -90,30 +105,40 @@ const Board = (boardProps:{isAgainstAI: boolean}) => {
                 }
             }
         }
-        if (state.findIndex(x => x === undefined) === -1) {
+        if (state.board.findIndex(x => x === undefined) === -1) {
             setWinningCells([0, 1, 2, 3, 4, 5, 6, 7, 8]);
             console.log("tie!");
         }
     }
 
-    function getAIMove(updatedState: (Player | undefined)[]) {
+    function resetBoard() {
+        setCurrentPlayer(Player.X);
+        setIsOver(false);
+        setState(initialiseState);
+        setWinningCells([]);
+        setHistory([]);
+    }
+
+    function getAIMove(updatedState: Board, updatedHistory: State[]) {
         const minimax: NaiveMiniMax = new NaiveMiniMax();
-        console.log(state);
         const bestState = minimax.getBestState(updatedState, Player.O);
-        console.log(bestState)
+        setHistory([...updatedHistory, bestState]);
         setState(bestState.board);
         setCurrentPlayer(Player.X);
     }
 
     return (
-        <Grid container gridTemplateColumns="repeat(3, 1fr)" display="grid" maxWidth="fit-content" gap={1}>
-            {
-                state.map((cell, i) => {
-                    return (<Grid item key={i} style={{width:"150px", height:"150px"}}><Square id={i} key={i} value={cell} isWin={winningCells.indexOf(i) !== -1}/></Grid>);
-                })
-            }
-        </Grid>
+        <div style={{display: 'flex'}}>
+            <Grid container gridTemplateColumns="repeat(3, 1fr)" display="grid" maxWidth="fit-content" gap={1} paddingRight={3}>
+                {
+                    state.board.map((cell, i) => {
+                        return (<Grid item key={i} style={{width:"150px", height:"150px"}}><Square id={i} key={i} value={cell} isWin={winningCells.indexOf(i) !== -1}/></Grid>);
+                    })
+                }
+            </Grid>
+            <HistoryBoard moves={history} />
+        </div>
     );
 };
 
-export default Board;
+export default GameBoard;
